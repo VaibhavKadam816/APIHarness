@@ -1,0 +1,548 @@
+{
+  "info": {
+    "_postman_id": "1c36bc40-73a5-4396-a3b3-343b60a4340f",
+    "name": "Acoustic Connect GraphQL API (R5 Schema)",
+    "description": "All operations verified against Acoustic_Connect_schema_R5.graphql. Set {{url}} and {{x-api-key}} environment variables. Default URL: https://connect-gql-us-1.goacoustic.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "url",
+      "value": "https://connect-gql-us-1.goacoustic.com",
+      "description": "GraphQL endpoint"
+    },
+    {
+      "key": "x-api-key",
+      "value": "",
+      "description": "Your Acoustic Connect API key"
+    }
+  ],
+  "item": [
+    {
+      "id": "ad63d1e3-e08c-4807-98c0-5ab7f79daa03",
+      "name": "[Q] Schema Info (_info)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  _info {\n    version\n    subscriptionId\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}",
+        "description": "Returns API version and subscription info."
+      }
+    },
+    {
+      "id": "db28ff14-879a-4d4b-b9e9-c86902d040b3",
+      "name": "[Q] Query DataSets",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  dataSets(type: AUDIENCE, first: 20) {\n    nodes {\n      dataSetId\n      name\n      type\n      consentGroups {\n        id\n        name\n      }\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "5a60bd18-6139-4507-8640-18e62aea8958",
+      "name": "[Q] Query Attribute Categories",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  datasetAttributeCategories {\n    nodes {\n      id\n      name\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "b1b1e8e4-492f-45a9-8c37-a877b12fe126",
+      "name": "[M] Update DataSet",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation {\n  updateDataSet(\n    where: { dataSetId: \"REPLACE_DATASET_ID\" }\n    to: { name: \"New Dataset Name\" }\n  ) {\n    dataSet {\n      dataSetId\n      name\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "67c7ae61-843c-4e43-97bb-fe8cfdba6498",
+      "name": "[Q] Query Contacts",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  contacts(\n    first: 10\n    # dataSetId: \"REPLACE_IF_NEEDED\"\n    # filter: [{ field: \"email\", eq: \"user@example.com\" }]\n  ) {\n    nodes {\n      contactId\n      attributes {\n        name\n        value\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n      totalCount\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "550f4a36-da69-4314-875a-2a883ff01d27",
+      "name": "[Q] Get Contact by contactId",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  contact(contactId: \"REPLACE_CONTACT_ID\") {\n    contactId\n    attributes {\n      name\n      value\n    }\n    consent {\n      consentGroups {\n        id\n        name\n        status\n      }\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "e3ff70fd-e1da-4015-bef4-f5804cfabdd0",
+      "name": "[Q] Get Contact by key",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  contact(key: \"REPLACE_KEY_VALUE\") {\n    contactId\n    attributes {\n      name\n      value\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "fb632030-944d-48b9-82af-b31b69bf5f03",
+      "name": "[M] Create Contact(s)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation {\n  createContacts(\n    # dataSetId: \"REPLACE_IF_NOT_DEFAULT\"\n    contactsInput: [{\n      attributes: [\n        { name: \"Unique ID\", value: \"user001\" }\n        { name: \"email\", value: \"user@example.com\" }\n        { name: \"firstName\", value: \"Jane\" }\n      ]\n    }]\n  ) {\n    items {\n      contactId\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "43570d21-841c-4db3-9a48-819b8ad12813",
+      "name": "[M] Update Contact(s)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation {\n  updateContacts(\n    updateContactInputs: [{\n      contactId: \"REPLACE_CONTACT_ID\"\n      to: {\n        attributes: [{ name: \"firstName\", value: \"Jane\" }]\n      }\n    }]\n  ) {\n    modifiedCount\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "38cbd733-77df-47b4-85f3-efa759f415bf",
+      "name": "[M] Delete Contact(s)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation {\n  deleteContacts(where: {\n    contactIdList: [\"REPLACE_CONTACT_ID\"]\n    deleteReason: USER_REQUEST\n  }) {\n    deletedCount\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "9a365ba9-1bea-4d03-9d92-254d15ae9dbf",
+      "name": "[Q] Get Pre-Signed Upload URL",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  preSignedUploadURL(uploadFileMetadata: {\n    filename: \"contacts.csv\"\n    mimetype: \"text/csv\"\n  }) {\n    url\n    key\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "b4b79335-fae7-4602-a0fd-c918247c67ff",
+      "name": "[M] Create Import Job",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation {\n  createImportJob(importInput: {\n    jobName: \"Import 2025-01-15\"\n    importType: ADD_UPDATE\n    fileFormat: DELIMITED\n    delimiter: \",\"\n    skipFirstRow: true\n    autoMap: true\n    failFast: false\n    createSegment: false\n    mappings: []\n    fileLocation: { key: \"REPLACE_S3_FILE_KEY\" }\n    dataSetId: \"REPLACE_DATASET_ID\"\n  }) {\n    jobId\n    status\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "b6e49852-9ff8-4061-9422-1afcb02ff4de",
+      "name": "[Q] Get Import Job Status",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  dataJob(id: \"REPLACE_JOB_ID\") {\n    id\n    status\n    tracking {\n      totalRows\n      processedRows\n      failedRows\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "55e75157-bb2d-426c-b74c-320fbcbf01bb",
+      "name": "[Q] Query Reference Sets",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  dataSets(type: REFERENCE_SET, first: 50) {\n    nodes {\n      dataSetId\n      name\n      type\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "3a2333f4-e02c-4014-a890-4f2e6f3523ba",
+      "name": "[Q] Get Reference Set Records",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  referenceSetRecords(\n    dataSetId: \"REPLACE_REFSET_ID\"\n    limit: 10\n  ) {\n    referenceSetId\n    attributes {\n      name\n      value\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "8e218b7d-4356-4b8f-a21c-7c8a639b7648",
+      "name": "[M] Connect Reference Set to Audience",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation {\n  addReferenceSetAssociation(dataSetAssociation: {\n    to: \"REPLACE_AUDIENCE_ID\"\n    from: \"REPLACE_REFSET_ID\"\n    mappings: [{ to: \"contactId\", from: \"contactId\" }]\n  }) {\n    to { dataSetId name }\n    from { dataSetId name }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "748b5346-f930-4ac2-b8bb-451050c6db06",
+      "name": "[M] Disconnect Reference Set",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation {\n  deleteReferenceSetAssociation(\n    to: \"REPLACE_AUDIENCE_ID\"\n    from: \"REPLACE_REFSET_ID\"\n  ) {\n    to { dataSetId }\n    from { dataSetId }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "70c0e3b4-c32a-47c3-9eba-b0f0e42435c5",
+      "name": "[Q] Query Activity Events",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  activityEvents(first: 10) {\n    nodes {\n      eventId\n      eventCategory\n      eventType\n      eventDate\n      contactId\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "31c8de59-cf63-4b74-9ffa-623313cd7974",
+      "name": "[Q] Query Consent Events",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{\n  consentEvents(first: 10) {\n    nodes {\n      eventId\n      eventCategory\n      eventType\n      eventDate\n      contactId\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "857730b1-d6de-41c4-b4ef-7fadd3a5203e",
+      "name": "[M] Right of Access Job (GDPR)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation {\n  createRightOfAccessJob(\n    contactIds: [\"REPLACE_CONTACT_ID\"]\n    sendNotifications: true\n  ) {\n    jobId\n    status\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    },
+    {
+      "id": "49ff8eab-6ca3-4ea7-a799-78d93a2abb6c",
+      "name": "[M] Right to be Forgotten Job (GDPR)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{x-api-key}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation {\n  createRightToBeForgottenJob(\n    contactIds: [\"REPLACE_CONTACT_ID\"]\n    sendNotifications: true\n  ) {\n    jobId\n    status\n  }\n}",
+            "variables": null
+          }
+        },
+        "url": "{{url}}"
+      }
+    }
+  ]
+}
