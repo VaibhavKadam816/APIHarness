@@ -282,38 +282,43 @@ const OPS=[
       return`mutation {\n  createContacts(\n    ${da}contactsInput: [{\n      attributes: [\n        ${attrs.join('\n        ')}\n      ]${con}\n    }]\n  ) {\n    items {\n      contactKey\n    }\n  }\n}`}
   },
   {id:'updateContacts',label:'Update Contact(s)',type:'m',
-    desc:'Update attributes/consent. contactId and key are mutual exclusive — use one.',
+    desc:'LIVE-VERIFIED: Update contact attributes. dataSetId is optional (omit to use default audience). Use contactId (UUID) OR key (your unique ID value) — not both.',
     sections:[
-      {t:'DataSet',i:'📦',f:[{id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid'}]},
+      {t:'DataSet (optional)',i:'📦',f:[{id:'dsId',label:'DataSet ID',type:'text',ph:'optional — omit for default audience'}]},
       {t:'Contact Identifier — use ONE',i:'🎯',f:[
-        {id:'contactId',label:'Contact ID',type:'text',ph:'contact-uuid  ← mutual exclusive with key'},
-        {id:'key',label:'Key Value',type:'text',ph:'key value (e.g. email or uniqueId)'},
+        {id:'contactId',label:'Contact ID (UUID)',type:'text',ph:'2bfcc0ae-6874-4948-bae9-1ce68b47ad43'},
+        {id:'key',label:'Key Value',type:'text',ph:'VK9628  ← use this OR contactId above'},
       ]},
       {t:'Field to Update',i:'✏️',f:[
-        {id:'attrName',label:'Attribute Name',type:'text',req:true,ph:'firstName'},
-        {id:'attrVal',label:'New Value',type:'text',req:true,ph:'Jane'},
+        {id:'attrName',label:'Attribute Name',type:'text',req:true,ph:'Last Name'},
+        {id:'attrVal',label:'New Value',type:'text',req:true,ph:'Kadam'},
       ]},
     ],
     build(f){
       const id=f.contactId?`contactId: "${f.contactId}"`:`key: "${f.key||'key-value'}"`;
-      const da=f.dsId?`dataSetId: "${f.dsId}", `:'';
-      return`mutation {\n  updateContacts(\n    ${da}updateContactInputs: [{\n      ${id}\n      to: {\n        attributes: [{\n          name: "${f.attrName||'attributeName'}"\n          value: "${f.attrVal||'newValue'}"\n        }]\n      }\n    }]\n  ) {\n    modifiedCount\n  }\n}`}
+      const da=f.dsId?`\n    dataSetId: "${f.dsId}",`:'';
+      return`mutation {\n  updateContacts(${da}\n    updateContactInputs: [{\n      ${id}\n      to: {\n        attributes: [{\n          name: "${f.attrName||'Last Name'}"\n          value: "${f.attrVal||'newValue'}"\n        }]\n      }\n    }]\n  ) {\n    modifiedCount\n  }\n}`}
   },
   {id:'deleteContacts',label:'Delete Contact(s)',type:'m',
-    desc:'⚠️ Permanently deletes contacts. Provide contactIdList OR keyList. deleteReason is required.',
+    desc:'LIVE-VERIFIED ⚠️ Irreversible. Three targeting options: keyList (by key value), contactIdList (by UUID), or addressableList (by email/phone). deleteReason required.',
     sections:[
-      {t:'⚠️ Irreversible — deleteReason required',i:'🗑',f:[
-        {id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid'},
-        {id:'contactId',label:'Contact ID',type:'text',req:true,ph:'contact-uuid  ← or use key below'},
-        {id:'key',label:'Key Value',type:'text',ph:'key value alternative'},
+      {t:'⚠️ Irreversible',i:'🗑',f:[
+        {id:'targetType',label:'Target By',type:'select',opts:['keyList','contactIdList','addressableList'],def:'keyList'},
+        {id:'keyVal',label:'Key Value (for keyList)',type:'text',ph:'VK9628'},
+        {id:'contactId',label:'Contact UUID (for contactIdList)',type:'text',ph:'2bfcc0ae-...'},
+        {id:'addrField',label:'Address Field (for addressableList)',type:'text',ph:'Email'},
+        {id:'addrVal',label:'Address Value (for addressableList)',type:'text',ph:'user@example.com'},
         {id:'reason',label:'Delete Reason',type:'select',
-          opts:['USER_REQUEST','DEPROVISIONING','RIGHT_TO_BE_FORGOTTEN'],def:'USER_REQUEST'},
+          opts:['USER_REQUEST','RIGHT_TO_BE_FORGOTTEN','DEPROVISIONING'],def:'USER_REQUEST'},
       ]},
     ],
     build(f){
-      const da=f.dsId?`dataSetId: "${f.dsId}"\n    `:'';
-      const id=f.contactId?`contactIdList: ["${f.contactId}"]`:`keyList: ["${f.key||'key-value'}"]`;
-      return`mutation {\n  deleteContacts(where: {\n    ${da}${id}\n    deleteReason: ${f.reason||'USER_REQUEST'}\n  }) {\n    deletedCount\n  }\n}`}
+      const t=f.targetType||'keyList';
+      let target;
+      if(t==='keyList') target=`keyList: ["${f.keyVal||'VK9628'}"]`;
+      else if(t==='contactIdList') target=`contactIdList: ["${f.contactId||'REPLACE_UUID'}"]`;
+      else target=`addressableList: [{ field: "${f.addrField||'Email'}", eq: "${f.addrVal||'user@example.com'}" }]`;
+      return`mutation {\n  deleteContacts(where: {\n    ${target}\n    deleteReason: ${f.reason||'USER_REQUEST'}\n  }) {\n    deletedCount\n  }\n}`}
   },
 ]},
 {cat:'📥 Import Jobs',list:[
@@ -322,7 +327,7 @@ const OPS=[
     fix:'autoMap removed. fileLocation uses {type:SFTP,filename,folder} — not key: path. Must use GraphQL variables pattern.',
     sections:[
       {t:'Job Settings',i:'⚙️',f:[
-        {id:'dsId',label:'DataSet ID',type:'text',req:true,ph:'audience-uuid'},
+        {id:'dsId',label:'DataSet ID',type:'text',ph:'optional — omit for default dataset'},
         {id:'jobName',label:'Job Name',type:'text',req:true,ph:'Import contacts 2025-03'},
         {id:'importType',label:'Import Type',type:'select',opts:['ADD_UPDATE'],def:'ADD_UPDATE'},
         {id:'createSegment',label:'Create Segment?',type:'select',opts:['false','true'],def:'false'},
@@ -451,6 +456,115 @@ const OPS=[
       return`mutation {\n  createRightToBeForgottenJob(\n    ${id}\n    sendNotifications: true\n  ) {\n    jobId\n    status\n  }\n}`}
   },
 ]},
+
+,
+{cat:'🛍️ Product Catalog',list:[
+
+  {id:'productCatalog',label:'Query Product Catalog (DataSet info)',type:'q',
+    desc:'DOCS-VERIFIED: Get the product catalog DataSet info including its ID. One catalog per subscription.',
+    sections:[],
+    build:()=>`{\n  dataSets(filter: [{ field: "type", eq: "PRODUCT_CATALOG" }]) {\n    nodes {\n      dataSetId\n      name\n      type\n    }\n  }\n}`},
+
+  {id:'products',label:'Query Products',type:'q',
+    desc:'DOCS-VERIFIED: List products in the product catalog. Supports first/last, orderBy, selectByName, and filter. Nodes contain attributes {name value type} and optional metadata.',
+    sections:[
+      {t:'Pagination & Sort',i:'📄',f:[
+        {id:'first',label:'First (limit)',type:'text',ph:'10'},
+        {id:'orderField',label:'Order By Field',type:'text',ph:'productName'},
+        {id:'orderDir',label:'Order Direction',type:'select',opts:['ASC','DESC'],def:'ASC'},
+      ]},
+      {t:'Filter (optional)',i:'🔍',f:[
+        {id:'filterField',label:'Filter Field',type:'text',ph:'productId  or  unitPrice  or  category'},
+        {id:'filterVal',label:'Filter Value (eq)',type:'text',ph:'AC-DBL-BRSH-6'},
+      ]},
+      {t:'Select Fields',i:'📋',f:[
+        {id:'selectFields',label:'selectByName (comma-separated)',type:'text',ph:'productId, productName, unitPrice, currency'},
+      ]},
+    ],
+    build(f){
+      const first=f.first?`first: ${f.first}, `:'';
+      const order=f.orderField?`\n    orderBy: { field: "${f.orderField}", sort: ${f.orderDir||'ASC'} }`:'';
+      const filter=f.filterField?`\n    filter: [{ field: "${f.filterField}", eq: "${f.filterVal||'value'}" }]`:'';
+      const select=f.selectFields
+        ?`\n    selectByName: [${f.selectFields.split(',').map(s=>`"${s.trim()}"`).join(', ')}]`
+        :'';
+      return`{\n  products(${first}${order}${filter}${select}\n  ) {\n    nodes {\n      attributes {\n        name\n        value\n        type\n      }\n      metadata {\n        dataSetId\n        tracking { createdAt lastModifiedAt }\n      }\n    }\n    pageInfo { hasNextPage endCursor }\n  }\n}`}
+  },
+
+  {id:'productById',label:'Query Product by ID',type:'q',
+    desc:'DOCS-VERIFIED: Get a single product by its productId value using the products query with a filter.',
+    sections:[
+      {t:'Product',i:'🔍',f:[
+        {id:'productId',label:'Product ID',type:'text',req:true,ph:'AC-DBL-BRSH-6'},
+      ]},
+    ],
+    build(f){
+      const pid=f.productId||'REPLACE_PRODUCT_ID';
+      return`{\n  products(\n    filter: [{ field: "productId", eq: "${pid}" }]\n  ) {\n    nodes {\n      attributes { name value type }\n    }\n  }\n}`}
+  },
+
+  {id:'createProduct',label:'Add a Product',type:'m',
+    desc:'DOCS-VERIFIED: Add a single product to the product catalog. productId is the key field and must be unique. All fields are passed as attributes.',
+    sections:[
+      {t:'Product Attributes',i:'📦',f:[
+        {id:'productId',label:'Product ID (key)',type:'text',req:true,ph:'AC-NEW-001'},
+        {id:'productName',label:'Product Name',type:'text',ph:'My New Product'},
+        {id:'unitPrice',label:'Unit Price',type:'text',ph:'29.99'},
+        {id:'currency',label:'Currency',type:'text',ph:'USD'},
+        {id:'category',label:'Category',type:'text',ph:'Electronics'},
+      ]},
+    ],
+    build(f){
+      const pid=f.productId||'PRODUCT-ID';
+      let attrs=`{ name: "productId", value: "${pid}" }`;
+      if(f.productName) attrs+=`\n        { name: "productName", value: "${f.productName}" }`;
+      if(f.unitPrice) attrs+=`\n        { name: "unitPrice", value: ${f.unitPrice} }`;
+      if(f.currency) attrs+=`\n        { name: "currency", value: "${f.currency}" }`;
+      if(f.category) attrs+=`\n        { name: "category", value: "${f.category}" }`;
+      return`mutation {\n  createProduct(\n    productInput: {\n      attributes: [\n        ${attrs}\n      ]\n    }\n  ) {\n    attributes { name value type }\n  }\n}`}
+  },
+
+  {id:'updateProduct',label:'Update a Product',type:'m',
+    desc:'DOCS-VERIFIED: Update attributes of an existing product. Identify by productId (the key). Only the attributes you specify will be updated.',
+    sections:[
+      {t:'Target',i:'🎯',f:[
+        {id:'productId',label:'Product ID',type:'text',req:true,ph:'AC-DBL-BRSH-6'},
+      ]},
+      {t:'Update',i:'✏️',f:[
+        {id:'attrName',label:'Attribute to Update',type:'text',req:true,ph:'unitPrice'},
+        {id:'attrVal',label:'New Value',type:'text',req:true,ph:'49.99'},
+      ]},
+    ],
+    build(f){
+      const pid=f.productId||'REPLACE_PRODUCT_ID';
+      return`mutation {\n  updateProduct(\n    where: { productId: "${pid}" }\n    to: {\n      attributes: [{ name: "${f.attrName||'unitPrice'}", value: "${f.attrVal||'newValue'}" }]\n    }\n  ) {\n    attributes { name value type }\n  }\n}`}
+  },
+
+  {id:'deleteProducts',label:'Delete Products',type:'m',
+    desc:'DOCS-VERIFIED ⚠️ Permanently deletes one or more products by their productId values.',
+    sections:[
+      {t:'⚠️ Irreversible',i:'🗑',f:[
+        {id:'productIds',label:'Product IDs (comma-separated)',type:'text',req:true,ph:'AC-001, AC-002'},
+      ]},
+    ],
+    build(f){
+      const ids=(f.productIds||'REPLACE_PRODUCT_ID').split(',').map(s=>`"${s.trim()}"`).join(', ');
+      return`mutation {\n  deleteProducts(\n    where: { productIds: [${ids}] }\n  ) {\n    deletedCount\n  }\n}`}
+  },
+
+  {id:'createProductAttr',label:'Add Custom Attribute to Product Catalog',type:'m',
+    desc:'DOCS-VERIFIED: Create a new custom attribute in the product catalog schema. Valid types: TEXT, NUMBER, DATE, BOOLEAN, ARRAY.',
+    sections:[
+      {t:'New Attribute',i:'➕',f:[
+        {id:'attrName',label:'Attribute Name',type:'text',req:true,ph:'discountPercent'},
+        {id:'attrType',label:'Type',type:'select',opts:['TEXT','NUMBER','DATE','BOOLEAN','ARRAY'],def:'TEXT'},
+      ]},
+    ],
+    build(f){
+      return`mutation {\n  createDataSetAttribute(\n    createAttributeInput: {\n      name: "${f.attrName||'newAttribute'}"\n      type: ${f.attrType||'TEXT'}\n      dataSetType: PRODUCT_CATALOG\n    }\n  ) {\n    name\n    type\n  }\n}`}
+  },
+
+]}
 ];
 
 // ── State ────────────────────────────────────────
