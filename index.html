@@ -190,19 +190,12 @@ const OPS=[
       const argsStr=args.length?`(\n    ${args.join('\n    ')}\n  )`:''
       return`{\n  dataSets${argsStr} {\n    nodes {\n      dataSetId\n      name\n      type${f.incConsent?`\n      consentGroups {\n        id\n        name\n      }`:''}${f.incAttrs?`\n      attributes {\n        name\n        type\n        category\n      }`:''}\n    }\n  }\n}`}
   },
-  {id:'datasetAttrCats',label:'Query Attribute Categories',type:'q',
-    desc:'Returns all attribute categories (datasetAttributeCategories).',sections:[],
-    build:()=>`{\n  datasetAttributeCategories {\n    nodes {\n      id\n      name\n    }\n  }\n}`},
-  {id:'updateDataSet',label:'Update DataSet',type:'m',
-    desc:'Rename a dataset. Required: dataSetId.',
-    sections:[
-      {t:'Target',i:'🎯',f:[{id:'dsId',label:'DataSet ID',type:'text',req:true,ph:'dataset-uuid'}]},
-      {t:'Changes',i:'✏️',f:[{id:'newName',label:'New Name',type:'text',ph:'My Audience'}]},
-    ],
-    fix:'Response is UpdateDataSetMutationResponse with dataSetId/dataJobId — not a nested dataSet object',
-    build(f){return`mutation {\n  updateDataSet(\n    where: { dataSetId: "${f.dsId||'dataset-uuid'}" }\n    to: { name: "${f.newName||'New Name'}" }\n  ) {\n    dataSetId\n    dataJobId\n  }\n}`}},
-]},
-{cat:'👥 Contacts',list:[
+  {id:'dataSetAttrCats',label:'Query Attribute Categories',type:'q',
+    desc:'LIVE-VERIFIED: Lists all attribute categories. Correct casing is dataSetAttributeCategories (capital S). Fields are name and icon — the id field does not exist on production.',
+    fix:'datasetAttributeCategories (lowercase s) was wrong. id field removed, icon field added.',
+    sections:[],
+    build:()=>`{\n  dataSetAttributeCategories {\n    nodes {\n      name\n      icon\n    }\n  }\n}`},
+
   {id:'contacts',label:'Query Contacts',type:'q',
     desc:'Paginated list of contacts. dataSetId is optional. Filter using field/value pairs.',
     sections:[
@@ -324,34 +317,38 @@ const OPS=[
   },
 ]},
 {cat:'📥 Import Jobs',list:[
-  {id:'preSignedURL',label:'Get Pre-Signed Upload URL',type:'q',
-    desc:'Step 1: Get an S3 pre-signed URL to upload a CSV. Use returned key in createImportJob.',
-    sections:[
-      {t:'File Metadata',i:'📁',f:[
-        {id:'filename',label:'Filename',type:'text',req:true,ph:'contacts.csv'},
-        {id:'mimetype',label:'MIME Type',type:'text',def:'text/csv',ph:'text/csv'},
-      ]},
-    ],
-    build(f){return`{\n  preSignedUploadURL(uploadFileMetadata: {\n    filename: "${f.filename||'contacts.csv'}"\n    mimetype: "${f.mimetype||'text/csv'}"\n  }) {\n    url\n    key\n  }\n}`}
-  },
   {id:'createImportJob',label:'Create Import Job',type:'m',
-    desc:'Step 2: Bulk import via file. importType: ADD_UPDATE | CREATE | DELETE.',
+    desc:'DOCS-VERIFIED: Import contacts from a CSV/TSV file on the Acoustic SFTP server. Uses GraphQL variables (not inline args). fileLocation requires type:SFTP + filename + folder. mappings use columnIndex + attributeName.',
+    fix:'autoMap removed. fileLocation uses {type:SFTP,filename,folder} — not key: path. Must use GraphQL variables pattern.',
     sections:[
-      {t:'Job Config',i:'⚙',f:[
-        {id:'jobName',label:'Job Name',type:'text',req:true,ph:'Import 2025-01-15'},
-        {id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid',hint:'Leave blank + set name to create new'},
-        {id:'dsName',label:'DataSet Name (if new)',type:'text',ph:'My Audience'},
-        {id:'fileKey',label:'File Key (from preSignedUploadURL)',type:'text',req:true,ph:'s3-file-key'},
-        {id:'impType',label:'Import Type',type:'select',opts:['ADD_UPDATE','CREATE','DELETE'],def:'ADD_UPDATE'},
-        {id:'skipFirst',label:'Skip first row (header)',type:'checkbox',def:true},
-        {id:'autoMap',label:'Auto-map columns',type:'checkbox',def:true},
+      {t:'Job Settings',i:'⚙️',f:[
+        {id:'dsId',label:'DataSet ID',type:'text',req:true,ph:'audience-uuid'},
+        {id:'jobName',label:'Job Name',type:'text',req:true,ph:'Import contacts 2025-03'},
+        {id:'importType',label:'Import Type',type:'select',opts:['ADD_UPDATE'],def:'ADD_UPDATE'},
+        {id:'createSegment',label:'Create Segment?',type:'select',opts:['false','true'],def:'false'},
+      ]},
+      {t:'File Location (SFTP)',i:'📁',f:[
+        {id:'filename',label:'Filename',type:'text',req:true,ph:'contacts.csv'},
+        {id:'folder',label:'Folder (optional)',type:'text',ph:'contacts'},
+        {id:'delimiter',label:'Delimiter',type:'select',opts:[',','\t','|'],def:','},
+        {id:'skipFirstRow',label:'Skip Header Row?',type:'select',opts:['true','false'],def:'true'},
       ]},
     ],
-    fix:'ImportJobResponse only has id field — no status field exists on this type',
-    build(f){return`mutation {\n  createImportJob(importInput: {\n    jobName: "${f.jobName||'Import Job'}"\n    importType: ${f.impType||'ADD_UPDATE'}\n    fileFormat: DELIMITED\n    delimiter: ","\n    skipFirstRow: ${f.skipFirst!==false}\n    autoMap: ${f.autoMap!==false}\n    failFast: false\n    createSegment: false\n    mappings: []\n    fileLocation: { key: "${f.fileKey||'s3-file-key'}" }${f.dsId?`\n    dataSetId: "${f.dsId}"`:''}${f.dsName?`\n    dataSetName: "${f.dsName}"`:''}  }) {\n    id\n  }\n}`}
+    build(f){
+      const dsId=f.dsId||'REPLACE_AUDIENCE_ID';
+      const jobName=f.jobName||'Import contacts';
+      const importType=f.importType||'ADD_UPDATE';
+      const createSeg=f.createSegment||'false';
+      const filename=f.filename||'contacts.csv';
+      const folder=f.folder;
+      const delim=f.delimiter||',';
+      const skip=f.skipFirstRow||'true';
+      const delimEsc=delim==='\t'?'\\t':delim;
+      const folderLine=folder?`\n      "folder": "${folder}",`:'';
+      return`mutation ($importInput: ImportInput!) {\n  createImportJob(importInput: $importInput) {\n    id\n  }\n}\n\n# Variables:\n# {\n#   "importInput": {\n#     "dataSetId": "${dsId}",\n#     "jobName": "${jobName}",\n#     "importType": "${importType}",\n#     "createSegment": ${createSeg},\n#     "fileFormat": "DELIMITED",\n#     "delimiter": "${delimEsc}",\n#     "skipFirstRow": ${skip},\n#     "fileLocation": {\n#       "type": "SFTP",\n#       "filename": "${filename}",${folderLine}\n#     },\n#     "mappings": [\n#       { "columnIndex": 1, "attributeName": "Contact Key" },\n#       { "columnIndex": 2, "attributeName": "Email" },\n#       { "columnIndex": 3, "attributeName": "First Name" }\n#     ]\n#   }\n# }`}
   },
   {id:'dataJob',label:'Get Import Job Status',type:'q',
-    desc:'Check status of a data job by its ID.',
+    desc:'LIVE-VERIFIED: Check status of a data job by ID. No row counts in tracking — monitor via status/startedAt/endedAt/errors.',
     sections:[
       {t:'Job',i:'📋',f:[{id:'jobId',label:'Job ID',type:'text',req:true,ph:'job-uuid'}]},
     ],
