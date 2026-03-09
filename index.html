@@ -460,37 +460,32 @@ const OPS=[
 ,
 {cat:'🛍️ Product Catalog',list:[
 
-  {id:'productCatalog',label:'Query Product Catalog (DataSet info)',type:'q',
-    desc:'DOCS-VERIFIED: Get the product catalog DataSet info including its ID. One catalog per subscription.',
-    sections:[],
-    build:()=>`{\n  dataSets(filter: [{ field: "type", eq: "PRODUCT_CATALOG" }]) {\n    nodes {\n      dataSetId\n      name\n      type\n    }\n  }\n}`},
-
   {id:'products',label:'Query Products',type:'q',
-    desc:'DOCS-VERIFIED: List products in the product catalog. Supports first/last, orderBy, selectByName, and filter. Nodes contain attributes {name value type} and optional metadata.',
+    desc:'LIVE-VERIFIED: List products. filter is an OBJECT not array. Supports first/last, orderBy, selectByName, filter. metadata fields are optional.',
+    fix:'filter: [{ ... }] (array) is wrong — use filter: { field: "...", eq: "..." } (plain object).',
     sections:[
       {t:'Pagination & Sort',i:'📄',f:[
         {id:'first',label:'First (limit)',type:'text',ph:'10'},
         {id:'orderField',label:'Order By Field',type:'text',ph:'productName'},
         {id:'orderDir',label:'Order Direction',type:'select',opts:['ASC','DESC'],def:'ASC'},
       ]},
-      {t:'Filter (optional)',i:'🔍',f:[
-        {id:'filterField',label:'Filter Field',type:'text',ph:'productId  or  unitPrice  or  category'},
-        {id:'filterVal',label:'Filter Value (eq)',type:'text',ph:'AC-DBL-BRSH-6'},
+      {t:'Filter (optional — object, not array)',i:'🔍',f:[
+        {id:'filterField',label:'Filter Field',type:'text',ph:'productId'},
+        {id:'filterVal',label:'Filter Value (eq)',type:'text',ph:'21'},
       ]},
-      {t:'Select Fields',i:'📋',f:[
-        {id:'selectFields',label:'selectByName (comma-separated)',type:'text',ph:'productId, productName, unitPrice, currency'},
+      {t:'Select Fields (optional)',i:'📋',f:[
+        {id:'selectFields',label:'selectByName (comma-separated)',type:'text',ph:'productId, productName, unitPrice'},
       ]},
     ],
     build(f){
-      const first=f.first?`first: ${f.first}, `:'';
-      const order=f.orderField?`\n    orderBy: { field: "${f.orderField}", sort: ${f.orderDir||'ASC'} }`:'';
-      const filter=f.filterField?`\n    filter: [{ field: "${f.filterField}", eq: "${f.filterVal||'value'}" }]`:'';
-      const select=f.selectFields
-        ?`\n    selectByName: [${f.selectFields.split(',').map(s=>`"${s.trim()}"`).join(', ')}]`
-        :'';
-      return`{\n  products(${first}${order}${filter}${select}\n  ) {\n    nodes {\n      attributes {\n        name\n        value\n        type\n      }\n      metadata {\n        dataSetId\n        tracking { createdAt lastModifiedAt }\n      }\n    }\n    pageInfo { hasNextPage endCursor }\n  }\n}`}
+      const args=[];
+      if(f.first) args.push(`first: ${f.first}`);
+      if(f.orderField) args.push(`orderBy: { field: "${f.orderField}", sort: ${f.orderDir||'ASC'} }`);
+      if(f.filterField) args.push(`filter: { field: "${f.filterField}", eq: "${f.filterVal||'value'}" }`);
+      if(f.selectFields) args.push(`selectByName: [${f.selectFields.split(',').map(s=>`"${s.trim()}"`).join(', ')}]`);
+      const argsStr=args.length?`(\n    ${args.join('\n    ')}\n  )`:'';
+      return`query {\n  products${argsStr} {\n    nodes {\n      attributes {\n        name\n        value\n        type\n      }\n    }\n  }\n}`}
   },
-
   {id:'productById',label:'Query Product by ID',type:'q',
     desc:'DOCS-VERIFIED: Get a single product by its productId value using the products query with a filter.',
     sections:[
@@ -500,11 +495,11 @@ const OPS=[
     ],
     build(f){
       const pid=f.productId||'REPLACE_PRODUCT_ID';
-      return`{\n  products(\n    filter: [{ field: "productId", eq: "${pid}" }]\n  ) {\n    nodes {\n      attributes { name value type }\n    }\n  }\n}`}
+      return`{\n  products(\n    filter: { field: "productId", eq: "${pid}" }\n  ) {\n    nodes {\n      attributes { name value type }\n    }\n  }\n}`}
   },
 
   {id:'createProduct',label:'Add a Product',type:'m',
-    desc:'DOCS-VERIFIED: Add a single product to the product catalog. productId is the key field and must be unique. All fields are passed as attributes.',
+    desc:'DOCS-VERIFIED: Add a single product to the product catalog. productId is the key field and must be unique.',
     sections:[
       {t:'Product Attributes',i:'📦',f:[
         {id:'productId',label:'Product ID (key)',type:'text',req:true,ph:'AC-NEW-001'},
@@ -525,168 +520,56 @@ const OPS=[
   },
 
   {id:'updateProduct',label:'Update a Product',type:'m',
-    desc:'DOCS-VERIFIED: Update attributes of an existing product. Identify by productId (the key). Only the attributes you specify will be updated.',
+    desc:'LIVE-VERIFIED: Update product attributes. Top-level args are productId and updatedProduct: { attributes: [...] }. Returns modifiedCount.',
+    fix:'where: { productId } + to: { attributes } was wrong. Correct: updateProduct(productId: "...", updatedProduct: { attributes: [...] }) { modifiedCount }',
     sections:[
       {t:'Target',i:'🎯',f:[
-        {id:'productId',label:'Product ID',type:'text',req:true,ph:'AC-DBL-BRSH-6'},
+        {id:'productId',label:'Product ID',type:'text',req:true,ph:'772'},
       ]},
       {t:'Update',i:'✏️',f:[
         {id:'attrName',label:'Attribute to Update',type:'text',req:true,ph:'unitPrice'},
-        {id:'attrVal',label:'New Value',type:'text',req:true,ph:'49.99'},
+        {id:'attrVal',label:'New Value',type:'text',req:true,ph:'529.99'},
+        {id:'attrName2',label:'Attribute 2 (optional)',type:'text',ph:'availability'},
+        {id:'attrVal2',label:'Value 2 (optional)',type:'text',ph:'In stock'},
       ]},
     ],
     build(f){
       const pid=f.productId||'REPLACE_PRODUCT_ID';
-      return`mutation {\n  updateProduct(\n    where: { productId: "${pid}" }\n    to: {\n      attributes: [{ name: "${f.attrName||'unitPrice'}", value: "${f.attrVal||'newValue'}" }]\n    }\n  ) {\n    attributes { name value type }\n  }\n}`}
+      let attrs=`{ name: "${f.attrName||'unitPrice'}", value: ${isNaN(f.attrVal)?`"${f.attrVal||'val'}"`:f.attrVal} }`;
+      if(f.attrName2) attrs+=`\n        { name: "${f.attrName2}", value: "${f.attrVal2||''}" }`;
+      return`mutation {\n  updateProduct(\n    productId: "${pid}"\n    updatedProduct: {\n      attributes: [\n        ${attrs}\n      ]\n    }\n  ) {\n    modifiedCount\n  }\n}`}
   },
 
   {id:'deleteProducts',label:'Delete Products',type:'m',
-    desc:'DOCS-VERIFIED ⚠️ Permanently deletes one or more products by their productId values.',
+    desc:'LIVE-VERIFIED ⚠️ Permanently deletes products. productIds is a TOP-LEVEL arg — not inside where: {}.',
+    fix:'where: { productIds: [...] } was wrong. Correct: deleteProducts(productIds: [...]) { deletedCount }',
     sections:[
       {t:'⚠️ Irreversible',i:'🗑',f:[
-        {id:'productIds',label:'Product IDs (comma-separated)',type:'text',req:true,ph:'AC-001, AC-002'},
+        {id:'productIds',label:'Product IDs (comma-separated)',type:'text',req:true,ph:'SAX-004, TRP-019, FLT-007'},
       ]},
     ],
     build(f){
       const ids=(f.productIds||'REPLACE_PRODUCT_ID').split(',').map(s=>`"${s.trim()}"`).join(', ');
-      return`mutation {\n  deleteProducts(\n    where: { productIds: [${ids}] }\n  ) {\n    deletedCount\n  }\n}`}
+      return`mutation {\n  deleteProducts(productIds: [${ids}]) {\n    deletedCount\n  }\n}`}
   },
 
   {id:'createProductAttr',label:'Add Custom Attribute to Product Catalog',type:'m',
-    desc:'DOCS-VERIFIED: Create a new custom attribute in the product catalog schema. Valid types: TEXT, NUMBER, DATE, BOOLEAN, ARRAY.',
+    desc:'LIVE-VERIFIED: Add custom attributes to the product catalog schema via updateDataSet. Pass the catalog dataSetId in where, and list new attributes in to.attributes.create.',
+    fix:'createDataSetAttribute with dataSetType:PRODUCT_CATALOG was wrong. Use updateDataSet(where: { dataSetId }, to: { attributes: { create: [...] } }).',
     sections:[
-      {t:'New Attribute',i:'➕',f:[
-        {id:'attrName',label:'Attribute Name',type:'text',req:true,ph:'discountPercent'},
-        {id:'attrType',label:'Type',type:'select',opts:['TEXT','NUMBER','DATE','BOOLEAN','ARRAY'],def:'TEXT'},
+      {t:'Catalog DataSet',i:'🗂',f:[
+        {id:'dsId',label:'Product Catalog DataSet ID',type:'text',req:true,ph:'CAT-2025YG'},
+      ]},
+      {t:'New Attributes',i:'➕',f:[
+        {id:'attr1Name',label:'Attribute 1 Name',type:'text',req:true,ph:'Available Offline'},
+        {id:'attr1Type',label:'Attribute 1 Type',type:'select',opts:['TEXT','NUMBER','DATE','BOOLEAN','ARRAY'],def:'TEXT'},
+        {id:'attr2Name',label:'Attribute 2 Name (optional)',type:'text',ph:'Region'},
+        {id:'attr2Type',label:'Attribute 2 Type',type:'select',opts:['TEXT','NUMBER','DATE','BOOLEAN','ARRAY'],def:'TEXT'},
       ]},
     ],
     build(f){
-      return`mutation {\n  createDataSetAttribute(\n    createAttributeInput: {\n      name: "${f.attrName||'newAttribute'}"\n      type: ${f.attrType||'TEXT'}\n      dataSetType: PRODUCT_CATALOG\n    }\n  ) {\n    name\n    type\n  }\n}`}
+      const dsId=f.dsId||'REPLACE_CATALOG_ID';
+      let attrs=`{ name: "${f.attr1Name||'NewAttribute'}", type: ${f.attr1Type||'TEXT'} }`;
+      if(f.attr2Name) attrs+=`\n          { name: "${f.attr2Name}", type: ${f.attr2Type||'TEXT'} }`;
+      return`mutation {\n  updateDataSet(\n    where: { dataSetId: "${dsId}" }\n    to: {\n      attributes: {\n        create: [\n          ${attrs}\n        ]\n      }\n    }\n  ) {\n    dataSetId\n  }\n}`}
   },
-
-]}
-];
-
-// ── State ────────────────────────────────────────
-let cur=null,vals={};
-
-// ── Sidebar ──────────────────────────────────────
-(function buildSb(){
-  const sb=document.getElementById('sb');
-  sb.innerHTML=`<div class="sb-hdr">Operations</div>`;
-  OPS.forEach(cat=>{
-    const lbl=document.createElement('div');lbl.className='sb-cat';lbl.textContent=cat.cat;sb.appendChild(lbl);
-    cat.list.forEach(op=>{
-      const btn=document.createElement('button');
-      btn.className='sb-btn'+(op.type==='m'?' mut':'');
-      btn.id='sb-'+op.id;
-      btn.innerHTML=`<span class="tag ${op.type}">${op.type.toUpperCase()}</span>${op.label}`;
-      btn.onclick=()=>selectOp(op);sb.appendChild(btn);
-    });
-  });
-})();
-
-function selectOp(op){
-  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('sb-'+op.id)?.classList.add('active');
-  cur=op;vals={};
-  op.sections.forEach(s=>s.f.forEach(f=>{if(f.def!==undefined)vals[f.id]=f.def}));
-  renderContent();
-}
-
-function renderContent(){
-  const op=cur;
-  const c=document.getElementById('content');c.innerHTML='';
-  const area=document.createElement('div');area.className='op-area fadein';
-  const fixBadge=op.fix?`<div class="op-fix">✓ ${op.fix}</div>`:'';
-  area.innerHTML=`
-    <div class="op-top">
-      <div class="op-top-row"><span class="tag ${op.type}">${op.type==='m'?'MUTATION':'QUERY'}</span><span class="op-name">${op.label}</span></div>
-      <div class="op-desc">${op.desc}</div>
-      ${fixBadge}
-    </div>
-    <div class="split">
-      <div class="form-pane" id="fp"></div>
-      <div class="output-pane">
-        <div class="out-hdr">
-          <span class="out-label">Generated Query</span>
-          <div class="out-actions">
-            <button class="alt-btn" onclick="copyCurl()">Copy as curl</button>
-            <button class="copy-btn" id="cbtn" onclick="copyQ()">⎘ Copy Query</button>
-          </div>
-        </div>
-        <div class="query-wrap" id="qwrap"></div>
-        <div class="usage-bar">
-          <div class="usage-item">📮 Postman: <span class="uc">POST</span> · GraphQL tab · header <span class="uc">x-api-key</span></div>
-          <div class="usage-item">💡 <span class="uc">type</span> arg removed — use <span class="uc">filter</span> syntax</div>
-        </div>
-      </div>
-    </div>`;
-  c.appendChild(area);
-  buildForm();updateQ();
-}
-
-function buildForm(){
-  const fp=document.getElementById('fp'),op=cur;
-  if(!op.sections.length){fp.innerHTML='<div class="no-params">No parameters required.<br/>This query runs as-is.</div>';return}
-  op.sections.forEach(sec=>{
-    const el=document.createElement('div');el.className='section';
-    el.innerHTML=`<div class="sec-hdr"><span>${sec.i}</span>${sec.t}</div><div class="sec-body">${sec.f.map(rf).join('')}</div>`;
-    fp.appendChild(el);
-  });
-  op.sections.forEach(s=>s.f.forEach(f=>{
-    const el=document.getElementById('f-'+f.id);if(!el)return;
-    const ev=f.type==='checkbox'?'change':f.type==='select'?'change':'input';
-    el.addEventListener(ev,e=>{vals[f.id]=f.type==='checkbox'?e.target.checked:e.target.value;updateQ()});
-  }));
-}
-
-function rf(f){
-  const v=vals[f.id]!==undefined?vals[f.id]:(f.def!==undefined?f.def:'');
-  if(f.type==='checkbox')
-    return`<div class="field"><label class="checkbox-row"><input id="f-${f.id}" type="checkbox" ${v?'checked':''}/><span>${f.label}</span></label></div>`;
-  let inp='';
-  if(f.type==='select')
-    inp=`<select id="f-${f.id}">${f.opts.map(o=>`<option value="${o}" ${v===o?'selected':''}>${o}</option>`).join('')}</select>`;
-  else
-    inp=`<input id="f-${f.id}" type="${f.type==='number'?'number':'text'}" placeholder="${f.ph||''}" value="${esc(String(v))}"/>`;
-  const badge=f.req?'<span class="req-star">*</span>':'<span class="opt-tag">opt</span>';
-  const hint=f.hint?`<div class="field-hint">${f.hint}</div>`:'';
-  const warn=f.warn?`<div class="field-warn">⚠ ${f.warn}</div>`:'';
-  return`<div class="field"><label>${f.label} ${badge}</label>${inp}${hint}${warn}</div>`;
-}
-
-function updateQ(){const raw=cur.build(vals);const w=document.getElementById('qwrap');if(!w)return;w.innerHTML=`<div class="query-display">${hl(raw)}</div>`;}
-function getQ(){return cur?cur.build(vals):''}
-function getEp(){return document.getElementById('region')?.value||'https://connect-gql-us-1.goacoustic.com'}
-function getKey(){return document.getElementById('api-key')?.value||'YOUR_API_KEY'}
-
-function hl(raw){
-  return raw.split('\n').map(line=>{
-    let h=esc(line);
-    h=h.replace(/(#.*)$/,'<span class="cm">$1</span>');
-    h=h.replace(/\b(mutation|query)\b/g,'<span class="kw">$1</span>');
-    h=h.replace(/&quot;([^&]*)&quot;/g,'<span class="str">"$1"</span>');
-    h=h.replace(/:\s*(\d+)(?=\s|,|$)/g,': <span class="num">$1</span>');
-    h=h.replace(/:\s*([A-Z_]{2,})(?=\s|,|$)/g,': <span class="enm">$1</span>');
-    h=h.replace(/([{}])/g,'<span class="br">$1</span>');
-    h=h.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(?=:)/g,'<span class="arg">$1</span>$2');
-    return`<span class="ql">${h}</span>`;
-  }).join('');
-}
-
-function copyQ(){const q=getQ();fallbackCopy(q);const btn=document.getElementById('cbtn');if(btn){btn.textContent='✓ Copied!';btn.classList.add('done');setTimeout(()=>{btn.textContent='⎘ Copy Query';btn.classList.remove('done')},2000)}toast('Query copied');}
-function copyCurl(){
-  const q=getQ();
-  const jsonBody=JSON.stringify({"query":q,"variables":{}});
-  // Escape single quotes for shell: replace ' with '\''
-  const escaped=jsonBody.replace(/'/g,"'\\''");
-  const cmd=`curl -X POST '${getEp()}' \\\n  -H "x-api-key: ${getKey()}" \\\n  -H 'Content-Type: application/json' \\\n  -H 'Accept: application/json' \\\n  --data-binary '${escaped}'`;
-  fallbackCopy(cmd);toast('curl command copied');
-}
-function fallbackCopy(t){try{navigator.clipboard?.writeText(t)}catch(e){}try{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}catch(e){}}
-function toast(msg){const t=document.getElementById('toast');t.textContent='✓ '+msg;t.style.display='block';t.style.animation='fadeIn .18s ease';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2200)}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-</script>
-</body>
-</html>
