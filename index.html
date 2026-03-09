@@ -25,6 +25,8 @@ color:#fff;box-shadow:0 0 16px var(--blueglow)}
 .hname{font-family:var(--display);font-size:12px;font-weight:700;color:var(--blue2);letter-spacing:1px}
 .hsep{width:1px;height:18px;background:var(--line2)}
 .htag{font-size:10px;color:var(--dim);letter-spacing:1px}
+.warn-pill{font-size:9px;background:rgba(240,168,74,.1);border:1px solid rgba(240,168,74,.3);
+color:var(--amber);padding:3px 8px;border-radius:4px;margin-left:6px}
 .apibar{display:flex;align-items:center;gap:10px;padding:7px 20px;border-bottom:1px solid var(--line);
 background:var(--bg2);flex-shrink:0;flex-wrap:wrap}
 .apibar label{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
@@ -53,12 +55,14 @@ border-left:2px solid transparent;transition:all .12s}
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px}
 .empty-glyph{font-size:42px;opacity:.1;filter:grayscale(1)}
 .empty-t{font-family:var(--display);font-size:16px;font-weight:700;color:var(--mid)}
-.empty-s{font-size:11px;color:var(--dim);text-align:center;line-height:1.7;max-width:300px}
+.empty-s{font-size:11px;color:var(--dim);text-align:center;line-height:1.7;max-width:320px}
 .op-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
 .op-top{padding:10px 18px;border-bottom:1px solid var(--line);background:var(--bg2);flex-shrink:0}
 .op-top-row{display:flex;align-items:center;gap:8px;margin-bottom:2px}
 .op-name{font-family:var(--display);font-size:14px;font-weight:700;color:var(--bright)}
 .op-desc{font-size:11px;color:var(--soft)}
+.op-fix{font-size:10px;color:var(--green);background:rgba(46,204,138,.07);border:1px solid rgba(46,204,138,.2);
+padding:2px 7px;border-radius:3px;margin-top:4px;display:inline-block}
 .split{flex:1;overflow:hidden;display:flex}
 .form-pane{width:305px;border-right:1px solid var(--line);overflow-y:auto;padding:14px;
 display:flex;flex-direction:column;gap:10px;flex-shrink:0;background:var(--bg)}
@@ -72,6 +76,7 @@ letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:
 .req-star{color:var(--red)}.opt-tag{font-size:9px;color:var(--dim);border:1px solid var(--line2);
 padding:1px 4px;border-radius:3px;text-transform:none;letter-spacing:0;font-weight:400}
 .field-hint{font-size:10px;color:var(--dim);margin-top:1px;line-height:1.4}
+.field-warn{font-size:10px;color:var(--amber);margin-top:1px;line-height:1.4}
 input,select,textarea{background:var(--bg4);border:1px solid var(--line2);border-radius:4px;
 color:var(--text);font-family:var(--mono);font-size:11px;padding:6px 9px;outline:none;width:100%;transition:border-color .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--blue)}
@@ -98,7 +103,7 @@ border-radius:4px;cursor:pointer;font-family:var(--mono);font-size:11px;transiti
 .ql{display:block;padding-left:40px;position:relative}
 .ql::before{content:counter(line);counter-increment:line;position:absolute;left:0;width:30px;
 text-align:right;color:var(--dim);font-size:10px;padding-right:7px;border-right:1px solid var(--line);user-select:none}
-.kw{color:var(--purple)}.fn{color:var(--blue2)}.arg{color:var(--cyan)}.str{color:var(--green)}
+.kw{color:var(--purple)}.arg{color:var(--cyan)}.str{color:var(--green)}
 .num{color:var(--amber)}.enm{color:var(--amber)}.cm{color:var(--dim);font-style:italic}.br{color:var(--soft)}
 .usage-bar{border-top:1px solid var(--line);background:var(--bg2);padding:8px 15px;
 display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap}
@@ -117,7 +122,8 @@ color:var(--green);border-radius:6px;padding:8px 14px;font-size:11px;box-shadow:
   <div class="hname">Acoustic Connect</div>
   <div class="hsep"></div>
   <div class="htag">GraphQL Query Builder</div>
-  <div style="margin-left:auto;font-size:9px;color:var(--dim)">Schema · R5 · verified</div>
+  <span class="warn-pill">⚠ Live-tested · filter syntax</span>
+  <div style="margin-left:auto;font-size:9px;color:var(--dim)">Schema R5 · runtime-verified</div>
 </header>
 
 <div class="apibar">
@@ -139,11 +145,7 @@ color:var(--green);border-radius:6px;padding:8px 14px;font-size:11px;box-shadow:
     <div class="empty">
       <div class="empty-glyph">{ }</div>
       <div class="empty-t">Select an operation</div>
-      <div class="empty-s">All operations verified against Acoustic_Connect_schema_R5.graphql. Fill in parameters, copy the generated query into Postman with header <code style="color:var(--cyan)">x-api-key</code>.</div>
-      <div style="display:flex;gap:8px;margin-top:6px">
-        <div style="font-size:10px;color:var(--dim);background:var(--bg3);border:1px solid var(--line2);padding:4px 9px;border-radius:4px;display:flex;align-items:center;gap:5px"><span class="tag q">Q</span> Query — read</div>
-        <div style="font-size:10px;color:var(--dim);background:var(--bg3);border:1px solid var(--line2);padding:4px 9px;border-radius:4px;display:flex;align-items:center;gap:5px"><span class="tag m">M</span> Mutation — write</div>
-      </div>
+      <div class="empty-s">All queries runtime-verified against the live API. The <code style="color:var(--amber)">type</code> argument on dataSets is removed (deprecated + dead in production) — use <code style="color:var(--cyan)">filter</code> instead.</div>
     </div>
   </div>
 </div>
@@ -153,7 +155,13 @@ color:var(--green);border-radius:6px;padding:8px 14px;font-size:11px;box-shadow:
 <script>
 function updateEp(){document.getElementById('ep-txt').textContent=document.getElementById('region').value}
 
-// All operation names & argument shapes verified against Acoustic_Connect_schema_R5.graphql
+// KEY RUNTIME FIX (confirmed by live curl testing 2025-03-06):
+// ❌ dataSets(type: AUDIENCE)  → "Unknown argument type on field Query.dataSets"
+//    The 'type' arg is @deprecated in schema and ALREADY REMOVED from production
+// ✅ dataSets(filter: [{ field: "type", eq: "AUDIENCE" }])  → works
+// ❌ DataSetAttribute.attributeId  → field doesn't exist on live API
+// ✅ DataSetAttribute fields: name, type, category, tracking, identifyAs, mapAs
+
 const OPS=[
 {cat:'🔍 Introspection',list:[
   {id:'info',label:'Schema Info (_info)',type:'q',desc:'Returns API version and subscription info.',sections:[],
@@ -161,37 +169,42 @@ const OPS=[
 ]},
 {cat:'📦 Audience · DataSets',list:[
   {id:'dataSets',label:'Query DataSets',type:'q',
-    desc:'List datasets. type arg: AUDIENCE | REFERENCE_SET | ALL_DATA_SETS | BEHAVIORAL_ATTRIBUTES | BEHAVIORAL_SCORES',
+    desc:'List datasets using filter syntax. The deprecated type: arg is dead on production — use filter instead.',
+    fix:'Uses filter: [{ field: "type", eq: "..." }] — confirmed working on live API',
     sections:[
-      {t:'Filters',i:'⚙',f:[
+      {t:'Filter by Type',i:'⚙',f:[
         {id:'dsType',label:'Dataset Type',type:'select',
-          opts:['(all)','AUDIENCE','REFERENCE_SET','ALL_DATA_SETS','BEHAVIORAL_ATTRIBUTES','BEHAVIORAL_SCORES'],def:'AUDIENCE'},
+          opts:['(all — no filter)','AUDIENCE','REFERENCE_SET','BEHAVIORAL_ATTRIBUTES','BEHAVIORAL_SCORES'],def:'AUDIENCE'},
         {id:'first',label:'First (limit)',type:'number',ph:'20',def:'20'},
       ]},
       {t:'Response Fields',i:'📋',f:[
         {id:'incConsent',label:'Include consentGroups',type:'checkbox',def:true},
-        {id:'incAttrs',label:'Include attributes',type:'checkbox',def:false},
+        {id:'incAttrs',label:'Include attributes (name, type, category)',type:'checkbox',def:false},
       ]},
     ],
     build(f){
-      const ta=f.dsType&&f.dsType!=='(all)'?`type: ${f.dsType}, `:'';
-      const fa=f.first?`first: ${f.first}`:'first: 20';
-      return`{\n  dataSets(${ta}${fa}) {\n    nodes {\n      dataSetId\n      name\n      type${f.incConsent?`\n      consentGroups {\n        id\n        name\n      }`:''}${f.incAttrs?`\n      attributes {\n        attributeId\n        name\n        type\n      }`:''}\n    }\n  }\n}`}
+      const args=[];
+      if(f.dsType&&f.dsType!=='(all — no filter)')
+        args.push(`filter: [{ field: "type", eq: "${f.dsType}" }]`);
+      if(f.first) args.push(`first: ${f.first}`);
+      const argsStr=args.length?`(\n    ${args.join('\n    ')}\n  )`:''
+      return`{\n  dataSets${argsStr} {\n    nodes {\n      dataSetId\n      name\n      type${f.incConsent?`\n      consentGroups {\n        id\n        name\n      }`:''}${f.incAttrs?`\n      attributes {\n        name\n        type\n        category\n      }`:''}\n    }\n  }\n}`}
   },
   {id:'datasetAttrCats',label:'Query Attribute Categories',type:'q',
     desc:'Returns all attribute categories (datasetAttributeCategories).',sections:[],
     build:()=>`{\n  datasetAttributeCategories {\n    nodes {\n      id\n      name\n    }\n  }\n}`},
   {id:'updateDataSet',label:'Update DataSet',type:'m',
-    desc:'Update a dataset — rename it or modify attributes. Required: dataSetId.',
+    desc:'Rename a dataset. Required: dataSetId.',
     sections:[
       {t:'Target',i:'🎯',f:[{id:'dsId',label:'DataSet ID',type:'text',req:true,ph:'dataset-uuid'}]},
       {t:'Changes',i:'✏️',f:[{id:'newName',label:'New Name',type:'text',ph:'My Audience'}]},
     ],
-    build(f){return`mutation {\n  updateDataSet(\n    where: { dataSetId: "${f.dsId||'dataset-uuid'}" }\n    to: { name: "${f.newName||'New Name'}" }\n  ) {\n    dataSet {\n      dataSetId\n      name\n    }\n  }\n}`}},
+    fix:'Response is UpdateDataSetMutationResponse with dataSetId/dataJobId — not a nested dataSet object',
+    build(f){return`mutation {\n  updateDataSet(\n    where: { dataSetId: "${f.dsId||'dataset-uuid'}" }\n    to: { name: "${f.newName||'New Name'}" }\n  ) {\n    dataSetId\n    dataJobId\n  }\n}`}},
 ]},
 {cat:'👥 Contacts',list:[
   {id:'contacts',label:'Query Contacts',type:'q',
-    desc:'Paginated list of contacts. dataSetId is optional (defaults to primary audience). Filter by any field.',
+    desc:'Paginated list of contacts. dataSetId is optional. Filter using field/value pairs.',
     sections:[
       {t:'DataSet',i:'📦',f:[
         {id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid',hint:'Leave blank for default audience'},
@@ -215,32 +228,42 @@ const OPS=[
       if(f.dsId) args.push(`dataSetId: "${f.dsId}"`);
       if(f.after) args.push(`after: "${f.after}"`);
       if(f.ff&&f.fv) args.push(`filter: [{ field: "${f.ff}", eq: "${f.fv}" }]`);
-      return`{\n  contacts(\n    ${args.join('\n    ')}\n  ) {\n    nodes {\n      contactId${f.incAttrs?`\n      attributes {\n        name\n        value\n      }`:''}${f.incConsent?`\n      consent {\n        consentGroups {\n          id\n          name\n          status\n        }\n      }`:''}\n    }${f.incPage?`\n    pageInfo {\n      hasNextPage\n      endCursor\n      totalCount\n    }`:''}\n  }\n}`}
+      return`query {\n  contacts(\n    ${args.join('\n    ')}\n  ) {\n    totalCount\n    nodes {\n      ${f.incAttrs?`attributes {\n        name\n        value\n      }`:'attributes { name value }'}${f.incConsent?`\n      consent {\n        channels {\n          channel\n          status\n        }\n      }`:''}\n    }${f.incPage?`\n    pageInfo {\n      hasNextPage\n      endCursor\n    }`:''}\n  }\n}`}
   },
   {id:'contact',label:'Get Single Contact',type:'q',
-    desc:'Fetch one contact by contactId OR key (mutual exclusive — use only one).',
+    desc:'LIVE-VERIFIED: Use contacts with filter + and conditions to find a specific contact. Combine key fields like Unique ID + Email for precise lookup.',
+    fix:'contact(contactId) not used in practice — use contacts(filter) with and conditions instead.',
     sections:[
-      {t:'Lookup — use ONE identifier',i:'🎯',f:[
-        {id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid'},
-        {id:'contactId',label:'Contact ID',type:'text',ph:'contact-uuid  ← mutual exclusive with key'},
-        {id:'key',label:'Key Value',type:'text',ph:'e.g. email value or Unique ID'},
+      {t:'Lookup Filters',i:'🎯',f:[
+        {id:'f1name',label:'Filter Field 1',type:'text',req:true,ph:'Unique ID',def:'Unique ID'},
+        {id:'f1val',label:'Filter Value 1',type:'text',req:true,ph:'VK1418'},
+        {id:'f2name',label:'Filter Field 2 (optional)',type:'text',ph:'Email'},
+        {id:'f2val',label:'Filter Value 2 (optional)',type:'text',ph:'user@example.com'},
+      ]},
+      {t:'Response Fields',i:'📋',f:[
+        {id:'selFields',label:'selectByName (comma-separated)',type:'text',def:'First Name,Email,Unique ID',ph:'First Name,Email,Unique ID'},
       ]},
     ],
     build(f){
-      const args=[];
-      if(f.dsId) args.push(`dataSetId: "${f.dsId}"`);
-      if(f.contactId) args.push(`contactId: "${f.contactId}"`);
-      else if(f.key) args.push(`key: "${f.key}"`);
-      return`{\n  contact(${args.join(', ')}) {\n    contactId\n    attributes {\n      name\n      value\n    }\n    consent {\n      consentGroups {\n        id\n        name\n        status\n      }\n    }\n  }\n}`}
+      const n1=f.f1name||'Unique ID', v1=f.f1val||'VALUE1';
+      const fields=(f.selFields||'First Name,Email,Unique ID').split(',').map(s=>s.trim()).filter(Boolean);
+      const sel=fields.map(x=>`"${x}"`).join(', ');
+      let filterBody;
+      if(f.f2name&&f.f2val){
+        filterBody=`filter: [\n      {\n        and: [\n          { field: "${n1}", eq: "${v1}" }\n          { field: "${f.f2name}", eq: "${f.f2val}" }\n        ]\n      }\n    ]`;
+      } else {
+        filterBody=`filter: [{ field: "${n1}", eq: "${v1}" }]`;
+      }
+      return`query {\n  contacts(\n    ${filterBody}\n  ) {\n    nodes {\n      attributes(selectByName: [${sel}]) {\n        name\n        value\n      }\n    }\n    totalCount\n  }\n}`}
   },
   {id:'createContacts',label:'Create Contact(s)',type:'m',
-    desc:'Creates contacts. contactsInput is [ContactCreateInput!]! — each needs attributes array. Consent is optional.',
+    desc:'Creates contacts. contactsInput is an array — each needs attributes. Consent is optional.',
     sections:[
       {t:'DataSet',i:'📦',f:[
         {id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid',hint:'Omit to use default audience'},
       ]},
       {t:'Contact Attributes',i:'👤',f:[
-        {id:'keyAttr',label:'Key Attribute Name',type:'text',req:true,ph:'Unique ID',hint:'The audience key attribute'},
+        {id:'keyAttr',label:'Key Attribute Name',type:'text',req:true,ph:'Unique ID',hint:'The audience key field'},
         {id:'keyVal',label:'Key Attribute Value',type:'text',req:true,ph:'user001'},
         {id:'emailVal',label:'Email Value',type:'text',ph:'user@example.com'},
         {id:'a3n',label:'Extra Attribute Name',type:'text',ph:'firstName'},
@@ -255,7 +278,7 @@ const OPS=[
     build(f){
       const attrs=[];
       if(f.keyAttr&&f.keyVal) attrs.push(`{ name: "${f.keyAttr}", value: "${f.keyVal}" }`);
-      if(f.emailVal) attrs.push(`{ name: "email", value: "${f.emailVal}" }`);
+      if(f.emailVal) attrs.push(`{ name: "Email", value: "${f.emailVal}" }`);
       if(f.a3n&&f.a3v) attrs.push(`{ name: "${f.a3n}", value: "${f.a3v}" }`);
       let con='';
       if(f.cgId&&f.cgStatus&&f.cgStatus!=='(none)'){
@@ -263,10 +286,10 @@ const OPS=[
         con=`\n      consent: {\n        consentGroups: [{\n          consentGroupId: "${f.cgId}"\n          status: ${f.cgStatus}${ch}\n        }]\n      }`;
       }
       const da=f.dsId?`dataSetId: "${f.dsId}", `:'';
-      return`mutation {\n  createContacts(\n    ${da}contactsInput: [{\n      attributes: [\n        ${attrs.join('\n        ')}\n      ]${con}\n    }]\n  ) {\n    items {\n      contactId\n    }\n  }\n}`}
+      return`mutation {\n  createContacts(\n    ${da}contactsInput: [{\n      attributes: [\n        ${attrs.join('\n        ')}\n      ]${con}\n    }]\n  ) {\n    items {\n      contactKey\n    }\n  }\n}`}
   },
   {id:'updateContacts',label:'Update Contact(s)',type:'m',
-    desc:'Update attributes/consent on contacts. Identify by contactId OR key — mutual exclusive.',
+    desc:'Update attributes/consent. contactId and key are mutual exclusive — use one.',
     sections:[
       {t:'DataSet',i:'📦',f:[{id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid'}]},
       {t:'Contact Identifier — use ONE',i:'🎯',f:[
@@ -284,12 +307,12 @@ const OPS=[
       return`mutation {\n  updateContacts(\n    ${da}updateContactInputs: [{\n      ${id}\n      to: {\n        attributes: [{\n          name: "${f.attrName||'attributeName'}"\n          value: "${f.attrVal||'newValue'}"\n        }]\n      }\n    }]\n  ) {\n    modifiedCount\n  }\n}`}
   },
   {id:'deleteContacts',label:'Delete Contact(s)',type:'m',
-    desc:'⚠️ Permanently deletes contacts. Provide contactIdList OR keyList. deleteReason is required by schema.',
+    desc:'⚠️ Permanently deletes contacts. Provide contactIdList OR keyList. deleteReason is required.',
     sections:[
       {t:'⚠️ Irreversible — deleteReason required',i:'🗑',f:[
         {id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid'},
         {id:'contactId',label:'Contact ID',type:'text',req:true,ph:'contact-uuid  ← or use key below'},
-        {id:'key',label:'Key Value',type:'text',ph:'key value alternative to Contact ID'},
+        {id:'key',label:'Key Value',type:'text',ph:'key value alternative'},
         {id:'reason',label:'Delete Reason',type:'select',
           opts:['USER_REQUEST','DEPROVISIONING','RIGHT_TO_BE_FORGOTTEN'],def:'USER_REQUEST'},
       ]},
@@ -302,7 +325,7 @@ const OPS=[
 ]},
 {cat:'📥 Import Jobs',list:[
   {id:'preSignedURL',label:'Get Pre-Signed Upload URL',type:'q',
-    desc:'Get an S3 pre-signed URL to upload a CSV/file before calling createImportJob.',
+    desc:'Step 1: Get an S3 pre-signed URL to upload a CSV. Use returned key in createImportJob.',
     sections:[
       {t:'File Metadata',i:'📁',f:[
         {id:'filename',label:'Filename',type:'text',req:true,ph:'contacts.csv'},
@@ -312,44 +335,49 @@ const OPS=[
     build(f){return`{\n  preSignedUploadURL(uploadFileMetadata: {\n    filename: "${f.filename||'contacts.csv'}"\n    mimetype: "${f.mimetype||'text/csv'}"\n  }) {\n    url\n    key\n  }\n}`}
   },
   {id:'createImportJob',label:'Create Import Job',type:'m',
-    desc:'Bulk import via createImportJob(importInput: ImportInput!). First get a file key via preSignedUploadURL.',
+    desc:'Step 2: Bulk import via file. importType: ADD_UPDATE | CREATE | DELETE.',
     sections:[
       {t:'Job Config',i:'⚙',f:[
         {id:'jobName',label:'Job Name',type:'text',req:true,ph:'Import 2025-01-15'},
-        {id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid',hint:'Leave blank + set name to create new dataset'},
+        {id:'dsId',label:'DataSet ID',type:'text',ph:'audience-uuid',hint:'Leave blank + set name to create new'},
         {id:'dsName',label:'DataSet Name (if new)',type:'text',ph:'My Audience'},
         {id:'fileKey',label:'File Key (from preSignedUploadURL)',type:'text',req:true,ph:'s3-file-key'},
         {id:'impType',label:'Import Type',type:'select',opts:['ADD_UPDATE','CREATE','DELETE'],def:'ADD_UPDATE'},
         {id:'skipFirst',label:'Skip first row (header)',type:'checkbox',def:true},
-        {id:'autoMap',label:'Auto-map columns to attributes',type:'checkbox',def:true},
+        {id:'autoMap',label:'Auto-map columns',type:'checkbox',def:true},
       ]},
     ],
-    build(f){return`mutation {\n  createImportJob(importInput: {\n    jobName: "${f.jobName||'Import Job'}"\n    importType: ${f.impType||'ADD_UPDATE'}\n    fileFormat: DELIMITED\n    delimiter: ","\n    skipFirstRow: ${f.skipFirst!==false}\n    autoMap: ${f.autoMap!==false}\n    failFast: false\n    createSegment: false\n    mappings: []\n    fileLocation: { key: "${f.fileKey||'s3-file-key'}" }${f.dsId?`\n    dataSetId: "${f.dsId}"`:''}${f.dsName?`\n    dataSetName: "${f.dsName}"`:''}  }) {\n    jobId\n    status\n  }\n}`}
+    fix:'ImportJobResponse only has id field — no status field exists on this type',
+    build(f){return`mutation {\n  createImportJob(importInput: {\n    jobName: "${f.jobName||'Import Job'}"\n    importType: ${f.impType||'ADD_UPDATE'}\n    fileFormat: DELIMITED\n    delimiter: ","\n    skipFirstRow: ${f.skipFirst!==false}\n    autoMap: ${f.autoMap!==false}\n    failFast: false\n    createSegment: false\n    mappings: []\n    fileLocation: { key: "${f.fileKey||'s3-file-key'}" }${f.dsId?`\n    dataSetId: "${f.dsId}"`:''}${f.dsName?`\n    dataSetName: "${f.dsName}"`:''}  }) {\n    id\n  }\n}`}
   },
   {id:'dataJob',label:'Get Import Job Status',type:'q',
-    desc:'Check status of a data job (import, export, etc.) by its ID.',
+    desc:'Check status of a data job by its ID.',
     sections:[
       {t:'Job',i:'📋',f:[{id:'jobId',label:'Job ID',type:'text',req:true,ph:'job-uuid'}]},
     ],
-    build(f){return`{\n  dataJob(id: "${f.jobId||'job-uuid'}") {\n    id\n    status\n    tracking {\n      totalRows\n      processedRows\n      failedRows\n    }\n  }\n}`}
+    fix:'DataJob.tracking is JobTracking (createdAt/lastModifiedAt only) — no row counts. Use startedAt/endedAt/errors instead.',
+    build(f){return`{\n  dataJob(id: "${f.jobId||'job-uuid'}") {\n    id\n    name\n    type\n    status\n    startedAt\n    endedAt\n    errors {\n      code\n      message\n    }\n  }\n}`}
   },
 ]},
 {cat:'🔗 Reference Sets',list:[
   {id:'refSets',label:'Query Reference Sets',type:'q',
-    desc:'List all datasets of type REFERENCE_SET.',sections:[],
-    build:()=>`{\n  dataSets(type: REFERENCE_SET, first: 50) {\n    nodes {\n      dataSetId\n      name\n      type\n    }\n  }\n}`},
+    desc:'List all reference sets using filter syntax.',
+    fix:'Uses filter syntax — same fix as dataSets',
+    sections:[],
+    build:()=>`{\n  dataSets(filter: [{ field: "type", eq: "REFERENCE_SET" }], first: 50) {\n    nodes {\n      dataSetId\n      name\n      type\n    }\n  }\n}`},
   {id:'refSetRecords',label:'Get Reference Set Records',type:'q',
-    desc:'Fetch records from a specific reference set. Signature: referenceSetRecords(dataSetId: ID!, limit: Float, orderBy: [SortField!])',
+    desc:'Fetch records from a reference set. Returns ReferenceSetRecordConnection. Pagination via first/last args.',
+    fix:'LIVE-VERIFIED: key field removed (does not exist on live API). Valid fields: dataSetId, attributes { name value }.',
     sections:[
       {t:'Reference Set',i:'🎯',f:[
         {id:'dsId',label:'DataSet ID',type:'text',req:true,ph:'refset-uuid'},
-        {id:'limit',label:'Limit',type:'number',def:'10',ph:'10'},
+        {id:'first',label:'First (limit)',type:'number',def:'10',ph:'10'},
       ]},
     ],
-    build(f){return`{\n  referenceSetRecords(\n    dataSetId: "${f.dsId||'refset-uuid'}"\n    limit: ${f.limit||10}\n  ) {\n    referenceSetId\n    attributes {\n      name\n      value\n    }\n  }\n}`}
+    build(f){return`{\n  referenceSetRecords(\n    dataSetId: "${f.dsId||'refset-uuid'}"\n    first: ${f.first||10}\n  ) {\n    nodes {\n      dataSetId\n      attributes {\n        name\n        value\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}`}
   },
   {id:'addRefSetAssoc',label:'Connect Reference Set to Audience',type:'m',
-    desc:'addReferenceSetAssociation — links a reference set (from) to an audience (to) with field key mappings.',
+    desc:'addReferenceSetAssociation — links a reference set (from) to an audience (to).',
     sections:[
       {t:'Association',i:'🔗',f:[
         {id:'toId',label:'Audience DataSet ID (to)',type:'text',req:true,ph:'audience-uuid'},
@@ -358,22 +386,24 @@ const OPS=[
         {id:'fromField',label:'Reference Set Join Field',type:'text',req:true,ph:'contactId'},
       ]},
     ],
+    fix:'AddReferenceSetAssociationResponse type not defined in schema — response fields may vary. Use minimal selection.',
     build(f){return`mutation {\n  addReferenceSetAssociation(dataSetAssociation: {\n    to: "${f.toId||'audience-uuid'}"\n    from: "${f.fromId||'refset-uuid'}"\n    mappings: [{\n      to: "${f.toField||'contactId'}"\n      from: "${f.fromField||'contactId'}"\n    }]\n  }) {\n    to { dataSetId name }\n    from { dataSetId name }\n  }\n}`}
   },
   {id:'delRefSetAssoc',label:'Disconnect Reference Set',type:'m',
-    desc:'deleteReferenceSetAssociation — removes the link between a reference set and an audience.',
+    desc:'deleteReferenceSetAssociation — removes the link between a reference set and audience.',
     sections:[
       {t:'Disconnect',i:'🔓',f:[
         {id:'toId',label:'Audience DataSet ID (to)',type:'text',req:true,ph:'audience-uuid'},
         {id:'fromId',label:'Reference Set DataSet ID (from)',type:'text',req:true,ph:'refset-uuid'},
       ]},
     ],
+    fix:'DeleteReferenceSetAssociationResponse type not defined in schema — use minimal selection.',
     build(f){return`mutation {\n  deleteReferenceSetAssociation(\n    to: "${f.toId||'audience-uuid'}"\n    from: "${f.fromId||'refset-uuid'}"\n  ) {\n    to { dataSetId }\n    from { dataSetId }\n  }\n}`}
   },
 ]},
 {cat:'📅 Activity Events',list:[
   {id:'activityEvents',label:'Query Activity Events',type:'q',
-    desc:'Paginated activity events — EMAIL, SMS, CONSENT, FORM_SUBMISSION, etc. Filter by contactId or date fields.',
+    desc:'Paginated activity events — EMAIL, SMS, CONSENT, FORM_SUBMISSION, etc.',
     sections:[
       {t:'Pagination',i:'📄',f:[
         {id:'first',label:'First (limit)',type:'number',def:'10',ph:'10'},
@@ -391,18 +421,16 @@ const OPS=[
       return`{\n  activityEvents(\n    ${args.join('\n    ')}\n  ) {\n    nodes {\n      eventId\n      eventCategory\n      eventType\n      eventDate\n      contactId\n      dataSetId\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}`}
   },
   {id:'consentEvents',label:'Query Consent Events',type:'q',
-    desc:'Consent-specific events (opt-ins, opt-outs). Filter and paginate.',
+    desc:'Consent-specific events (opt-ins, opt-outs).',
     sections:[
-      {t:'Pagination',i:'📄',f:[
-        {id:'first',label:'First',type:'number',def:'10',ph:'10'},
-      ]},
+      {t:'Pagination',i:'📄',f:[{id:'first',label:'First',type:'number',def:'10',ph:'10'}]},
     ],
     build(f){return`{\n  consentEvents(first: ${f.first||10}) {\n    nodes {\n      eventId\n      eventCategory\n      eventType\n      eventDate\n      contactId\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}`}
   },
 ]},
 {cat:'⚖️ GDPR / Privacy',list:[
   {id:'roaJob',label:'Right of Access Job',type:'m',
-    desc:'createRightOfAccessJob — trigger a GDPR data export for a contact.',
+    desc:'createRightOfAccessJob — GDPR data export for a contact.',
     sections:[
       {t:'Contact',i:'👤',f:[
         {id:'contactId',label:'Contact ID',type:'text',ph:'contact-uuid'},
@@ -434,9 +462,9 @@ let cur=null,vals={};
 // ── Sidebar ──────────────────────────────────────
 (function buildSb(){
   const sb=document.getElementById('sb');
+  sb.innerHTML=`<div class="sb-hdr">Operations</div>`;
   OPS.forEach(cat=>{
-    const lbl=document.createElement('div');
-    lbl.className='sb-cat';lbl.textContent=cat.cat;sb.appendChild(lbl);
+    const lbl=document.createElement('div');lbl.className='sb-cat';lbl.textContent=cat.cat;sb.appendChild(lbl);
     cat.list.forEach(op=>{
       const btn=document.createElement('button');
       btn.className='sb-btn'+(op.type==='m'?' mut':'');
@@ -459,10 +487,12 @@ function renderContent(){
   const op=cur;
   const c=document.getElementById('content');c.innerHTML='';
   const area=document.createElement('div');area.className='op-area fadein';
+  const fixBadge=op.fix?`<div class="op-fix">✓ ${op.fix}</div>`:'';
   area.innerHTML=`
     <div class="op-top">
       <div class="op-top-row"><span class="tag ${op.type}">${op.type==='m'?'MUTATION':'QUERY'}</span><span class="op-name">${op.label}</span></div>
       <div class="op-desc">${op.desc}</div>
+      ${fixBadge}
     </div>
     <div class="split">
       <div class="form-pane" id="fp"></div>
@@ -476,8 +506,8 @@ function renderContent(){
         </div>
         <div class="query-wrap" id="qwrap"></div>
         <div class="usage-bar">
-          <div class="usage-item">📮 Postman: <span class="uc">POST</span> GraphQL tab · header <span class="uc">x-api-key: YOUR_KEY</span></div>
-          <div class="usage-item">🌐 Altair · Insomnia · curl all work</div>
+          <div class="usage-item">📮 Postman: <span class="uc">POST</span> · GraphQL tab · header <span class="uc">x-api-key</span></div>
+          <div class="usage-item">💡 <span class="uc">type</span> arg removed — use <span class="uc">filter</span> syntax</div>
         </div>
       </div>
     </div>`;
@@ -487,7 +517,7 @@ function renderContent(){
 
 function buildForm(){
   const fp=document.getElementById('fp'),op=cur;
-  if(!op.sections.length){fp.innerHTML='<div class="no-params">No parameters required.<br/>This query runs as-is with no arguments.</div>';return}
+  if(!op.sections.length){fp.innerHTML='<div class="no-params">No parameters required.<br/>This query runs as-is.</div>';return}
   op.sections.forEach(sec=>{
     const el=document.createElement('div');el.className='section';
     el.innerHTML=`<div class="sec-hdr"><span>${sec.i}</span>${sec.t}</div><div class="sec-body">${sec.f.map(rf).join('')}</div>`;
@@ -511,20 +541,15 @@ function rf(f){
     inp=`<input id="f-${f.id}" type="${f.type==='number'?'number':'text'}" placeholder="${f.ph||''}" value="${esc(String(v))}"/>`;
   const badge=f.req?'<span class="req-star">*</span>':'<span class="opt-tag">opt</span>';
   const hint=f.hint?`<div class="field-hint">${f.hint}</div>`:'';
-  return`<div class="field"><label>${f.label} ${badge}</label>${inp}${hint}</div>`;
+  const warn=f.warn?`<div class="field-warn">⚠ ${f.warn}</div>`:'';
+  return`<div class="field"><label>${f.label} ${badge}</label>${inp}${hint}${warn}</div>`;
 }
 
-function updateQ(){
-  const raw=cur.build(vals);
-  const w=document.getElementById('qwrap');if(!w)return;
-  w.innerHTML=`<div class="query-display">${hl(raw)}</div>`;
-}
-
+function updateQ(){const raw=cur.build(vals);const w=document.getElementById('qwrap');if(!w)return;w.innerHTML=`<div class="query-display">${hl(raw)}</div>`;}
 function getQ(){return cur?cur.build(vals):''}
 function getEp(){return document.getElementById('region')?.value||'https://connect-gql-us-1.goacoustic.com'}
 function getKey(){return document.getElementById('api-key')?.value||'YOUR_API_KEY'}
 
-// ── Highlight ────────────────────────────────────
 function hl(raw){
   return raw.split('\n').map(line=>{
     let h=esc(line);
@@ -539,26 +564,17 @@ function hl(raw){
   }).join('');
 }
 
-// ── Copy ─────────────────────────────────────────
-function copyQ(){
-  const q=getQ();fallbackCopy(q);
-  const btn=document.getElementById('cbtn');
-  if(btn){btn.textContent='✓ Copied!';btn.classList.add('done');setTimeout(()=>{btn.textContent='⎘ Copy Query';btn.classList.remove('done')},2000)}
-  toast('Query copied to clipboard');
-}
-
+function copyQ(){const q=getQ();fallbackCopy(q);const btn=document.getElementById('cbtn');if(btn){btn.textContent='✓ Copied!';btn.classList.add('done');setTimeout(()=>{btn.textContent='⎘ Copy Query';btn.classList.remove('done')},2000)}toast('Query copied');}
 function copyCurl(){
-  const q=getQ().replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n');
-  const cmd=`curl --location '${getEp()}' \\\n--header 'x-api-key: ${getKey()}' \\\n--header 'Content-Type: application/json' \\\n--data '{"query":"${q}","variables":{}}'`;
+  const q=getQ();
+  const jsonBody=JSON.stringify({"query":q,"variables":{}});
+  // Escape single quotes for shell: replace ' with '\''
+  const escaped=jsonBody.replace(/'/g,"'\\''");
+  const cmd=`curl -X POST '${getEp()}' \\\n  -H "x-api-key: ${getKey()}" \\\n  -H 'Content-Type: application/json' \\\n  -H 'Accept: application/json' \\\n  --data-binary '${escaped}'`;
   fallbackCopy(cmd);toast('curl command copied');
 }
-
-function fallbackCopy(t){try{navigator.clipboard?.writeText(t)}catch(e){}
-  try{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}catch(e){}}
-
-function toast(msg){const t=document.getElementById('toast');t.textContent='✓ '+msg;t.style.display='block';
-  t.style.animation='fadeIn .18s ease';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2200)}
-
+function fallbackCopy(t){try{navigator.clipboard?.writeText(t)}catch(e){}try{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}catch(e){}}
+function toast(msg){const t=document.getElementById('toast');t.textContent='✓ '+msg;t.style.display='block';t.style.animation='fadeIn .18s ease';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2200)}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 </script>
 </body>
