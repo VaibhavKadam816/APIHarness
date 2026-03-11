@@ -456,8 +456,6 @@ const OPS=[
       return`mutation {\n  createRightToBeForgottenJob(\n    ${id}\n    sendNotifications: true\n  ) {\n    jobId\n    status\n  }\n}`}
   },
 ]},
-
-,
 {cat:'🛍️ Product Catalog',list:[
 
   {id:'products',label:'Query Products',type:'q',
@@ -573,3 +571,236 @@ const OPS=[
       if(f.attr2Name) attrs+=`\n          { name: "${f.attr2Name}", type: ${f.attr2Type||'TEXT'} }`;
       return`mutation {\n  updateDataSet(\n    where: { dataSetId: "${dsId}" }\n    to: {\n      attributes: {\n        create: [\n          ${attrs}\n        ]\n      }\n    }\n  ) {\n    dataSetId\n  }\n}`}
   },
+]},
+];
+
+// ─────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────
+let current = null;
+let vals = {};
+
+// ─────────────────────────────────────────────────────────────
+// SIDEBAR
+// ─────────────────────────────────────────────────────────────
+function buildSidebar() {
+  const sb = document.getElementById('sb');
+  OPS.forEach(cat => {
+    const lbl = document.createElement('div');
+    lbl.className = 'sb-cat';
+    lbl.textContent = cat.cat;
+    sb.appendChild(lbl);
+    cat.list.forEach(op => {
+      const btn = document.createElement('button');
+      btn.className = 'sb-btn' + (op.type === 'm' ? ' mut' : '');
+      btn.id = 'sb-' + op.id;
+      btn.innerHTML = '<span class="tag ' + op.type + '">' + op.type.toUpperCase() + '</span>' + op.label;
+      btn.onclick = () => selectOp(op);
+      sb.appendChild(btn);
+    });
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// SELECT OP
+// ─────────────────────────────────────────────────────────────
+function selectOp(op) {
+  document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('sb-' + op.id);
+  if (el) el.classList.add('active');
+  current = op;
+  vals = {};
+  op.sections.forEach(sec => sec.f.forEach(f => { if (f.def !== undefined) vals[f.id] = f.def; }));
+  renderContent();
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDER CONTENT
+// ─────────────────────────────────────────────────────────────
+function renderContent() {
+  const op = current;
+  const container = document.getElementById('content');
+  container.innerHTML = '';
+
+  const area = document.createElement('div');
+  area.className = 'op-area fadein';
+  const typeLabel = op.type === 'm' ? 'MUTATION' : 'QUERY';
+  const fixHtml = op.fix
+    ? '<div class="op-fix"><span style="color:var(--amber)">⚠ Fix applied:</span> ' + esc(op.fix) + '</div>'
+    : '';
+
+  area.innerHTML =
+    '<div class="op-top">' +
+      '<div class="op-top-row">' +
+        '<span class="tag ' + op.type + '">' + typeLabel + '</span>' +
+        '<span class="op-name">' + op.label + '</span>' +
+      '</div>' +
+      '<div class="op-desc">' + op.desc + '</div>' +
+      fixHtml +
+    '</div>' +
+    '<div class="split">' +
+      '<div class="form-pane" id="form-pane"></div>' +
+      '<div class="output-pane">' +
+        '<div class="out-header">' +
+          '<span class="out-label">Generated Query</span>' +
+          '<div class="out-actions">' +
+            '<button class="copy-btn" id="copy-btn" onclick="copyQuery()">⌘ Copy Query</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="query-wrap" id="query-wrap"></div>' +
+        '<div class="curl-hdr" id="curl-hdr" style="margin-top:12px;font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;border-top:1px solid var(--line);padding-top:10px">curl</div>' +
+        '<div class="query-wrap" id="curl-wrap"></div>' +
+        '<button class="copy-btn" id="curl-copy-btn" style="margin-top:6px" onclick="copyCurl()">⌘ Copy curl</button>' +
+      '</div>' +
+    '</div>';
+
+  container.appendChild(area);
+  buildForm();
+  updateQuery();
+}
+
+// ─────────────────────────────────────────────────────────────
+// BUILD FORM
+// ─────────────────────────────────────────────────────────────
+function buildForm() {
+  const pane = document.getElementById('form-pane');
+  const op = current;
+  if (!op.sections.length) {
+    pane.innerHTML = '<div style="color:var(--dim);font-size:12px;padding:8px 0">No parameters required. This query runs as-is.</div>';
+    return;
+  }
+  op.sections.forEach(sec => {
+    const el = document.createElement('div');
+    el.className = 'section';
+    el.innerHTML =
+      '<div class="sec-hdr"><span class="sec-hdr-icon">' + sec.i + '</span>' + sec.t + '</div>' +
+      '<div class="sec-body">' + sec.f.map(renderField).join('') + '</div>';
+    pane.appendChild(el);
+  });
+
+  // bind events
+  op.sections.forEach(sec => sec.f.forEach(f => {
+    const el = document.getElementById('f-' + f.id);
+    if (!el) return;
+    const ev = f.type === 'select' ? 'change' : 'input';
+    el.addEventListener(ev, e => {
+      vals[f.id] = e.target.value;
+      updateQuery();
+    });
+  }));
+}
+
+function renderField(f) {
+  const v = vals[f.id];
+  let input = '';
+  if (f.type === 'select') {
+    input = '<select id="f-' + f.id + '">' +
+      f.opts.map(o => '<option value="' + o + '"' + ((v !== undefined ? v : f.def) === o ? ' selected' : '') + '>' + o + '</option>').join('') +
+      '</select>';
+  } else {
+    input = '<input id="f-' + f.id + '" type="text" placeholder="' + (f.ph || '') + '" value="' + esc(v !== undefined ? String(v) : '') + '"/>';
+  }
+  return '<div class="field">' +
+    '<label>' + f.label + ' ' + (f.req ? '<span class="req-star">*</span>' : '<span class="opt-tag">optional</span>') + '</label>' +
+    input +
+  '</div>';
+}
+
+// ─────────────────────────────────────────────────────────────
+// UPDATE QUERY + CURL OUTPUT
+// ─────────────────────────────────────────────────────────────
+function updateQuery() {
+  const raw = current.build(vals);
+  const wrap = document.getElementById('query-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="query-display">' + highlight(raw) + '</div>';
+
+  // build curl
+  const apiKey = document.getElementById('apikey') ? document.getElementById('apikey').value : 'YOUR_API_KEY';
+  const ep = document.getElementById('region') ? document.getElementById('region').value : 'https://connect-gql-us-1.goacoustic.com';
+  const escaped = raw.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n');
+  const curlCmd =
+    'curl -X POST \'' + ep + '\' \\\n' +
+    '  -H "x-api-key: ' + (apiKey || 'YOUR_API_KEY') + '" \\\n' +
+    '  -H "Content-Type: application/json" \\\n' +
+    '  --data \'{"query":"' + escaped + '"}\'';
+
+  const curlWrap = document.getElementById('curl-wrap');
+  if (curlWrap) curlWrap.innerHTML = '<div class="query-display" style="color:var(--cyan);font-size:11px">' + esc(curlCmd) + '</div>';
+}
+
+function getQuery() { return current ? current.build(vals) : ''; }
+
+// ─────────────────────────────────────────────────────────────
+// SYNTAX HIGHLIGHT
+// ─────────────────────────────────────────────────────────────
+function highlight(raw) {
+  return raw.split('\n').map(line => {
+    let h = esc(line);
+    h = h.replace(/\b(mutation|query)\b/, '<span class="kw">$1</span>');
+    h = h.replace(/&quot;([^&]*)&quot;/g, '<span class="str">&quot;$1&quot;</span>');
+    h = h.replace(/:\s*(\d+)(\s|$)/g, ': <span class="num">$1</span>$2');
+    h = h.replace(/:\s*([A-Z_]{2,})(\s|$)/g, ': <span class="op2">$1</span>$2');
+    h = h.replace(/([{}[\]])/g, '<span class="br">$1</span>');
+    h = h.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)(\s*):/g, '<span class="arg">$1</span>$2:');
+    return '<span class="ql">' + h + '</span>';
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────
+// COPY
+// ─────────────────────────────────────────────────────────────
+function copyQuery() {
+  const q = getQuery();
+  navigator.clipboard.writeText(q).then(() => {
+    const btn = document.getElementById('copy-btn');
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = '⌘ Copy Query', 2000); }
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = q; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  });
+}
+
+function copyCurl() {
+  const apiKey = document.getElementById('apikey') ? document.getElementById('apikey').value : 'YOUR_API_KEY';
+  const ep = document.getElementById('region') ? document.getElementById('region').value : 'https://connect-gql-us-1.goacoustic.com';
+  const raw = getQuery();
+  const escaped = raw.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n');
+  const curlCmd =
+    'curl -X POST \'' + ep + '\' \\\n' +
+    '  -H "x-api-key: ' + (apiKey || 'YOUR_API_KEY') + '" \\\n' +
+    '  -H "Content-Type: application/json" \\\n' +
+    '  --data \'{"query":"' + escaped + '"}\'';
+  navigator.clipboard.writeText(curlCmd).then(() => {
+    const btn = document.getElementById('curl-copy-btn');
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = '⌘ Copy curl', 2000); }
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = curlCmd; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  });
+}
+
+// re-render curl when API key or region changes
+document.addEventListener('DOMContentLoaded', () => {
+  const apiKeyInput = document.getElementById('apikey');
+  const regionInput = document.getElementById('region');
+  if (apiKeyInput) apiKeyInput.addEventListener('input', () => { if (current) updateQuery(); });
+  if (regionInput) regionInput.addEventListener('change', () => { if (current) updateQuery(); });
+});
+
+// ─────────────────────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────
+buildSidebar();
+</script>
+</body>
+</html>
