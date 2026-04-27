@@ -724,7 +724,7 @@ function updateQuery() {
   wrap.innerHTML = '<div class="query-display">' + highlight(raw) + '</div>';
 
   // build curl
-  const apiKey = document.getElementById('apikey') ? document.getElementById('apikey').value : 'YOUR_API_KEY';
+  const apiKey = document.getElementById('api-key') ? document.getElementById('api-key').value : 'YOUR_API_KEY';
   const ep = document.getElementById('region') ? document.getElementById('region').value : 'https://connect-gql-us-1.goacoustic.com';
   const escaped = raw.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n');
   const curlCmd =
@@ -771,7 +771,7 @@ function copyQuery() {
 }
 
 function copyCurl() {
-  const apiKey = document.getElementById('apikey') ? document.getElementById('apikey').value : 'YOUR_API_KEY';
+  const apiKey = document.getElementById('api-key') ? document.getElementById('api-key').value : 'YOUR_API_KEY';
   const ep = document.getElementById('region') ? document.getElementById('region').value : 'https://connect-gql-us-1.goacoustic.com';
   const raw = getQuery();
   const escaped = raw.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n');
@@ -792,7 +792,7 @@ function copyCurl() {
 
 // re-render curl when API key or region changes
 document.addEventListener('DOMContentLoaded', () => {
-  const apiKeyInput = document.getElementById('apikey');
+  const apiKeyInput = document.getElementById('api-key');
   const regionInput = document.getElementById('region');
   if (apiKeyInput) apiKeyInput.addEventListener('input', () => { if (current) updateQuery(); });
   if (regionInput) regionInput.addEventListener('change', () => { if (current) updateQuery(); });
